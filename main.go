@@ -15,7 +15,7 @@ import (
 func extractPayloadBin(filename string) string {
 	zipReader, err := zip.OpenReader(filename)
 	if err != nil {
-		log.Fatalf("Not a valid zip archive: %s\n", filename)
+		log.Fatalf("不是有效的zip压缩包: %s\n", filename)
 	}
 	defer zipReader.Close()
 
@@ -23,12 +23,12 @@ func extractPayloadBin(filename string) string {
 		if file.Name == "payload.bin" && file.UncompressedSize64 > 0 {
 			zippedFile, err := file.Open()
 			if err != nil {
-				log.Fatalf("Failed to read zipped file: %s\n", file.Name)
+				log.Fatalf("未能读取压缩文件: %s\n", file.Name)
 			}
 
 			tempfile, err := os.CreateTemp(os.TempDir(), "payload_*.bin")
 			if err != nil {
-				log.Fatalf("Failed to create a temp file located at %s\n", tempfile.Name())
+				log.Fatalf("未能于: %s 创建临时文件\n", tempfile.Name())
 			}
 			defer tempfile.Close()
 
@@ -54,14 +54,14 @@ func main() {
 		concurrency     int
 	)
 
-	flag.IntVar(&concurrency, "c", 4, "Number of multiple workers to extract (shorthand)")
-	flag.IntVar(&concurrency, "concurrency", 4, "Number of multiple workers to extract")
-	flag.BoolVar(&list, "l", false, "Show list of partitions in payload.bin (shorthand)")
-	flag.BoolVar(&list, "list", false, "Show list of partitions in payload.bin")
-	flag.StringVar(&outputDirectory, "o", "", "Set output directory (shorthand)")
-	flag.StringVar(&outputDirectory, "output", "", "Set output directory")
-	flag.StringVar(&partitions, "p", "", "Dump only selected partitions (comma-separated) (shorthand)")
-	flag.StringVar(&partitions, "partitions", "", "Dump only selected partitions (comma-separated)")
+	flag.IntVar(&concurrency, "c", 4, "提取线程数量 (缩写)")
+	flag.IntVar(&concurrency, "concurrency", 4, "提取线程数量")
+	flag.BoolVar(&list, "l", false, "显示在 payload.bin 中的分区的列表 (缩写)")
+	flag.BoolVar(&list, "list", false, "显示在 payload.bin 中的分区的列表")
+	flag.StringVar(&outputDirectory, "o", "", "设置输出目录 (缩写)")
+	flag.StringVar(&outputDirectory, "output", "", "设置输出目录")
+	flag.StringVar(&partitions, "p", "", "只提取选择的分区 (用逗号分隔) (缩写)")
+	flag.StringVar(&partitions, "partitions", "", "只提取选择的分区 (用逗号分隔)")
 	flag.Parse()
 
 	if flag.NArg() == 0 {
@@ -70,15 +70,15 @@ func main() {
 	filename := flag.Arg(0)
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		log.Fatalf("File does not exist: %s\n", filename)
+		log.Fatalf("文件不存在!: %s\n", filename)
 	}
 
 	payloadBin := filename
 	if strings.HasSuffix(filename, ".zip") {
-		fmt.Println("Please wait while extracting payload.bin from the archive.")
+		fmt.Println("请稍候, 正在从压缩文件中提取 payload.bin")
 		payloadBin = extractPayloadBin(filename)
 		if payloadBin == "" {
-			log.Fatal("Failed to extract payload.bin from the archive.")
+			log.Fatal("从压缩文件中提取 payload.bin 失败")
 		} else {
 			defer os.Remove(payloadBin)
 		}
@@ -99,16 +99,16 @@ func main() {
 
 	targetDirectory := outputDirectory
 	if targetDirectory == "" {
-		targetDirectory = fmt.Sprintf("extracted_%d%02d%02d_%02d%02d%02d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
+		targetDirectory = fmt.Sprintf("已提取的分区_%d%02d%02d_%02d%02d%02d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 	}
 	if _, err := os.Stat(targetDirectory); os.IsNotExist(err) {
 		if err := os.Mkdir(targetDirectory, 0o755); err != nil {
-			log.Fatal("Failed to create target directory")
+			log.Fatal("未能创建目标目录")
 		}
 	}
 
 	payload.SetConcurrency(concurrency)
-	fmt.Printf("Number of workers: %d\n", payload.GetConcurrency())
+	fmt.Printf("提取线程数量: %d\n", payload.GetConcurrency())
 
 	if partitions != "" {
 		if err := payload.ExtractSelected(targetDirectory, strings.Split(partitions, ",")); err != nil {
@@ -122,7 +122,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s [options] [inputfile]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "使用: %s [选项] [输入文件]\n", os.Args[0])
 	flag.PrintDefaults()
 	os.Exit(2)
 }
